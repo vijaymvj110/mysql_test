@@ -1,14 +1,15 @@
 from flask import Flask, json, jsonify, request
-from flask_mysqldb import MySQL
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
 app = Flask(__name__)
 
-db = SQLAlchemy()
-ma = Marshmallow()
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:vijaymvj110@localhost/productitems"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# app.config["SQLALCHEMY_DATABASE_URI"]="sqlite:///Database.db"
 
-mysql = MySQL(app)
+db = SQLAlchemy(app)
+ma = Marshmallow(app)
 
 
 class Items(db.Model):
@@ -24,17 +25,13 @@ class Items(db.Model):
 
 
 class ProductSchema(ma.Schema):
-    class meta:
+    class Meta:
         fields = ("id", "name", "price", "category")
 
 
 product_schema = ProductSchema()
 products_schema = ProductSchema(many=True)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:vijaymvj110@localhost/productitems"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config["SQLALCHEMY_DATABASE_URI"]="sqlite:///Database.db"
-db.init_app(app)
 with app.app_context():
     db.create_all()
 
@@ -48,14 +45,14 @@ def add_product():
     new_product = Items(name=name, price=price, category=category)
     db.session.add(new_product)
     db.session.commit()
-    return jsonify({"Message": "Your product has been added"})
+    return jsonify({"Message": f"{name},{price} and {category} for Your product has been added"})
 
 
 @app.route('/get', methods=['GET'])
-def get_product():
-    data = Items.query.all()
-    products = products_schema.dump(data)
-    return jsonify(products)
+def get_productitems():
+    get_product = Items.query.all()
+    result = products_schema.dump(get_product)
+    return jsonify(result)
 
 
 @app.route("/get/<id>", methods=["GET"])
@@ -63,20 +60,35 @@ def product_byid(id):
     if str.isdigit(id) == False:
         return jsonify(f"Message:ID of the product cannot be a string")
     else:
-        data = []
         product = Items.query.get(id)
         if product is None:
-            return jsonify(f"No products was found")
+            return jsonify(f"No products was found for id = {id}")
         data = product_schema.dump(product)
         return jsonify(data)
 
 
-@app.route('/product/delete/<id>', methods=["POST"])
+@app.route('/update/<id>', methods=['PUT'])
+def updateItem(id):
+    _json = request.json
+    name = _json['name']
+    price = _json['price']
+    category = _json['category']
+    update = Items.query.get(id)
+    if update is None:
+        return jsonify(f"No items available for id = {id}")
+    update.name=name
+    update.price=price
+    update.category=category
+    db.session.commit()
+    return jsonify({"Message":f"{id} th Item has been updated successfully"})
+
+
+@app.route('/delete/<id>', methods=["POST"])
 def delete_byid(id):
     product = Items.query.get(id)
     db.session.delete(product)
     db.session.commit()
-    return jsonify(f"The product has been deleted")
+    return jsonify(f"The {id} product has been deleted successfully")
 
 
 if __name__ == '__main__':
