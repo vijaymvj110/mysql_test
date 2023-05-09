@@ -1,10 +1,10 @@
-from flask import Flask, json, jsonify, request
+from flask import Flask,jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
 app = Flask(__name__)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:vijaymvj110@localhost/productitems"
+app.config["SQLALCHEMY_DATABASE_URI"] = "mysql://root:root@localhost/products"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # app.config["SQLALCHEMY_DATABASE_URI"]="sqlite:///Database.db"
 
@@ -88,7 +88,7 @@ def delete_byid(id):
     product = Items.query.get(id)
     db.session.delete(product)
     db.session.commit()
-    return jsonify(f"The {id} product has been deleted successfully")
+    return jsonify(f"The id = {id} product has been deleted successfully")
 
 
 if __name__ == '__main__':

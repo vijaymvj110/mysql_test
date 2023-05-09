@@ -47,20 +47,20 @@ def add_user():
 
 
 @app.route('/user', methods=['GET'])
-def getalluser():
+def get_all_user():
     all_user = User.query.all()
     result = users_schema.dump(all_user)
     return jsonify(result)
 
 
 @app.route('/user/<id>', methods=['GET'])
-def getUserById(id):
+def get_user_by_id(id):
     user = User.query.get(id)
     return user_schema.jsonify(user)
 
 
 @app.route('/user/<id>', methods=['PUT'])
-def updateUserByID(id):
+def update_user_by_id(id):
     update_user = User.query.get(id)
     name = request.json['name']
     contact = request.json['contact']
@@ -71,7 +71,7 @@ def updateUserByID(id):
 
 
 @app.route('/user/<id>', methods=['DELETE'])
-def DeleteById(id):
+def delete_by_id(id):
     delete_user = User.query.get(id)
     db.session.delete(delete_user)
     db.session.commit()
