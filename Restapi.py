@@ -57,7 +57,7 @@ def get_productitems():
 
 @app.route("/get/<id>", methods=["GET"])
 def product_byid(id):
-    if str.isdigit(id) == False:
+    if not str.isdigit(id):
         return jsonify(f"Message:ID of the product cannot be a string")
     else:
         product = Items.query.get(id)
